@@ -11,3 +11,18 @@ MenuButton{
 MenuButton:hover{
     background-color: #e6e6e6;
 }
+PopupButton{
+    border: none;
+    background-color: #e8e8e8;
+    min-height: 40px;
+    min-width: 190px;
+    text-align: left;
+    padding-left: 20px;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 0px;
+}
+PopupButton:hover{
+    background-color: #d1d1d1;
+}
+

@@ -12,7 +12,6 @@ class MenuButton(QPushButton):
 
 
 class MenuBar(QWidget):
-    parent = None
     menubar_height = 60
     _left_menu_width = 250
     _middle_menu_width = 300
@@ -31,14 +30,13 @@ class MenuBar(QWidget):
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
-        self.parent = parent
-        self.file_dialog = FileDialog(self.parent)
-        self.more_popup = MorePopup(self.parent)
+        self.file_dialog = FileDialog(self.parent())
+        self.more_popup = MorePopup(self.parent())
         self.draw_menubar()
         self.setStyleSheet("MenuBar{margin: 0px; padding-left: 30px; background-color: red}")
 
     def draw_menubar(self):
-        self.setGeometry(0, 0, self.parent.width(), self.menubar_height)
+        self.setGeometry(0, 0, self.parent().width(), self.menubar_height)
         layout = QHBoxLayout()
         left_layout = QHBoxLayout()
         middle_layout = QHBoxLayout()
@@ -112,4 +110,5 @@ class MenuBar(QWidget):
         more_btn = MenuButton(self)
         more_btn.setIcon(QIcon(self.__more_icon_url))
         more_btn.clicked.connect(self.more_popup.toggle)
+
         layout.addWidget(more_btn)
