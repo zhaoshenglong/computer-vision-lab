@@ -3,7 +3,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMenu, QAction, QMenuBar, QPushButton, QWidget, QHBoxLayout, QSizePolicy
 from resource import Constant
 from .dialog import FileDialog
-import serial
+from .popupWindow import MorePopup
 
 
 class MenuButton(QPushButton):
@@ -27,11 +27,13 @@ class MenuBar(QWidget):
     __more_icon_url = "./resource/more_icon.png"
     __edit_icon_url = "./resource/edit_icon.png"
     file_dialog = None
+    more_popup = None
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.parent = parent
         self.file_dialog = FileDialog(self.parent)
+        self.more_popup = MorePopup(self.parent)
         self.draw_menubar()
         self.setStyleSheet("MenuBar{margin: 0px; padding-left: 30px; background-color: red}")
 
@@ -100,11 +102,14 @@ class MenuBar(QWidget):
 
     def draw_right_layout(self, layout):
         layout.setSpacing(0)
-        edit_btn = QWidget(self)
-        # edit_layout = QHBoxLayout()
-        # edit_layout.setSpacing(0)
-        # edit_layout.addWidget()
-        # edit_btn.setLayout()
+        edit_btn = MenuButton(self)
+        edit_btn.setIcon(QIcon(self.__edit_icon_url))
+        edit_btn.setText(" 编辑")
+        layout.addWidget(edit_btn)
+        edit_btn.setStyleSheet("QPushButton{  \
+                                    width: 90px\
+                                }")
         more_btn = MenuButton(self)
         more_btn.setIcon(QIcon(self.__more_icon_url))
+        more_btn.clicked.connect(self.more_popup.toggle)
         layout.addWidget(more_btn)
