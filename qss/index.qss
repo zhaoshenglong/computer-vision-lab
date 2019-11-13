@@ -1,34 +1,13 @@
 QMainWindow{
     background-color:#FFF;
-}
-MenuBar{
-    spacing: 3px; /* spacing between menu bar items */
-}
-MenuBar{
-    width: 100%;
-    padding-left: 3px;
-    padding-right: 3px;
-}
-MenuBar::item{
-    height: 60px;
-    min-width: 120px;
-    padding: 16px;
-    border: 0px;
-}
-MenuBar::item:selected{
-    background-color: #efefef;
-}
-QMenu{
     padding: 0px;
 }
-QMenu::item{
-    background: #ebebeb;
-    width: 100%;
-    padding: 5px 8px;
+MenuButton{
+    border: none;
+    background-color: #fff;
+    min-height: 60px;
+    min-width: 60px;
 }
-QMenu::item:selected{
-    background-color: #d3d3d3;
-    color: #2a2a2a;
+MenuButton:hover{
+    background-color: #e6e6e6;
 }
-
-

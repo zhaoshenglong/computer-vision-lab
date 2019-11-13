@@ -40,6 +40,7 @@ def __gaussianKernel__(ks: int, sigma: float):
 
 def __gaussianFilter__(region: np.ndarray, kernel: np.ndarray):
     shape = region.shape
+    # print(shape, kernel.shape)
     assert (shape == kernel.shape)
     res: region.dtype = 0
 
@@ -55,10 +56,11 @@ def __doFilter__(src: np.ndarray, ks: int = 3, kernel: np.ndarray = None, _filte
 
     res = np.empty(shape, dtype)
     half_ks = ks >> 1
+    half_ks_up = (ks + 1) >> 1
     for i in range(half_ks, shape[0] - half_ks):
         for j in range(half_ks, shape[1] - half_ks):
             res[i][j] = _filter(
-                src[i - half_ks: i + half_ks + 1, j - half_ks: j + half_ks + 1], kernel)
+                src[i - half_ks: i + half_ks_up, j - half_ks: j + half_ks_up], kernel)
 
     # deal with boundary, simplest way is to ignore the boundary
     for i in range(half_ks):
@@ -88,9 +90,9 @@ def gaussianFilter(src: np.ndarray, ks: int, sigma: float):
 def main():
     img = cv.imread("../resource/lena.jpg", cv.IMREAD_GRAYSCALE)
     cv.imshow("source image", img)
-    cv.imshow("mean filter", meanFilter(img, 3))
-    cv.imshow("median filter", medianFilter(img, 3))
-    cv.imshow("gaussian filter", gaussianFilter(img, 3, 0.2))
+    cv.imshow("mean filter", meanFilter(img, 8))
+    cv.imshow("median filter", medianFilter(img, 8))
+    cv.imshow("gaussian filter", gaussianFilter(img, 8, 3))
     cv.waitKey(0)
     cv.destroyAllWindows()
 
