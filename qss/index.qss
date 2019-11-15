@@ -2,6 +2,9 @@ QMainWindow{
     background-color:#FFF;
     padding: 0px;
 }
+QWidget{
+    font-family: "Microsoft YaHei UI";
+}
 MenuButton{
     border: none;
     background-color: #fff;
@@ -18,11 +21,53 @@ PopupButton{
     min-width: 190px;
     text-align: left;
     padding-left: 20px;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 400;
     margin: 0px;
 }
 PopupButton:hover{
     background-color: #d1d1d1;
 }
-
+PopupButton QIcon{
+    margin-right: 6px;
+}
+ToolButton{
+    border: none;
+    background-color: #f2f2f2;
+    min-height: 40px;
+    min-width: 190px;
+    text-align: left;
+    padding-left: 20px;
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0px;
+}
+ToolButton:hover{
+    background-color: #d1d1d1;
+}
+QSlider{
+    height: 48px;
+    background: #f2f2f2;
+}
+QSlider::groove:horizontal{
+    border: 1px solid #999999;
+    height: 3px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    min-width: 270px;
+    border-radius: px;
+}
+QSlider::add-page:horizontal{
+    background: #c7c7c7;
+}
+QSlider::sub-page:horizontal{
+    background: #0084ff;
+}
+QSlider::handle:horizontal {
+    width: 12px;
+    height: 12px;
+    margin: -16px 0;
+    border-radius: 16px;
+    border-image: url("./resource/slider.png");
+}
+QSlider:handle:horizontal:hover{
+    border-image: url("./resource/slider_hover.png");
+}

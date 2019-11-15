@@ -1,9 +1,10 @@
 from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMenu, QAction, QMenuBar, QPushButton, QWidget, QHBoxLayout, QSizePolicy
-from resource import Constant
+from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout, QSizePolicy
+from ui.RightWindow import RightWindow
 from .dialog import FileDialog
 from .popupWindow import MorePopup
+
 
 
 class MenuButton(QPushButton):
@@ -12,10 +13,8 @@ class MenuButton(QPushButton):
 
 
 class MenuBar(QWidget):
-    menubar_height = 60
-    _left_menu_width = 250
-    _middle_menu_width = 300
-    _right_menu_width = 360
+    menubar_height = 60  # Fixed height
+    min_optimal_width = 800
     __image_icon_url = "./resource/image_icon.png"
     __save_icon_url = "./resource/save_icon.png"
     __magnifier_plus_url = "./resource/magnifier_plus_icon.png"
@@ -27,16 +26,22 @@ class MenuBar(QWidget):
     __edit_icon_url = "./resource/edit_icon.png"
     file_dialog = None
     more_popup = None
+    image_btn = None
+    save_btn = None
+    magnifier_btn = None
+    undo_btn = None
+    redo_btn = None
+    cut_btn = None
+    rotate_btn = None
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.file_dialog = FileDialog(self.parent())
         self.more_popup = MorePopup(self.parent())
         self.draw_menubar()
-        self.setStyleSheet("MenuBar{margin: 0px; padding-left: 30px; background-color: red}")
 
     def draw_menubar(self):
-        self.setGeometry(0, 0, self.parent().width(), self.menubar_height)
+        self.setGeometry(0, 0, self.parent().width(), self.menubar_height)  # Fixed origin
         layout = QHBoxLayout()
         left_layout = QHBoxLayout()
         middle_layout = QHBoxLayout()
@@ -65,7 +70,6 @@ class MenuBar(QWidget):
                                     background-color: rgb(0,120,215); \
                                     color: #fff; \
                                     width: 130px; \
-                                    height: 60px; \
                                 } \
                                 QPushButton:hover{\
                                 background-color: rgb(66,156,227)}")
@@ -103,12 +107,50 @@ class MenuBar(QWidget):
         edit_btn = MenuButton(self)
         edit_btn.setIcon(QIcon(self.__edit_icon_url))
         edit_btn.setText(" 编辑")
-        layout.addWidget(edit_btn)
         edit_btn.setStyleSheet("QPushButton{  \
-                                    width: 90px\
-                                }")
+                                            width: 90px\
+                                        }")
+        edit_btn.clicked.connect(self.parent().right_window.toggle)
+        layout.addWidget(edit_btn)
+
         more_btn = MenuButton(self)
         more_btn.setIcon(QIcon(self.__more_icon_url))
         more_btn.clicked.connect(self.more_popup.toggle)
-
         layout.addWidget(more_btn)
+
+    def on_window_resize(self, width, height):
+        self.setGeometry(0, 0, width, self.menubar_height)
+        if width < self.min_optimal_width:
+            self.children()[0].setText("")
+            self.children()[0].setStyleSheet("QPushButton{\
+                                    background-color: rgb(0,120,215); \
+                                    color: #fff; \
+                                    width: 85px; \
+                                } \
+                                QPushButton:hover{\
+                                background-color: rgb(66,156,227)}")
+            self.children()[1].setText("")
+            self.children()[1].setStyleSheet("QPushButton{  \
+                                    width: 85px\
+                                }")
+            self.children()[7].setText("")
+            self.children()[7].setStyleSheet("QPushButton{  \
+                                                width: 85px\
+                                            }")
+        else:
+            self.children()[0].setText(" 打开图片")
+            self.children()[0].setStyleSheet("QPushButton{\
+                                    background-color: rgb(0,120,215); \
+                                    color: #fff; \
+                                    width: 130px; \
+                                } \
+                                QPushButton:hover{\
+                                background-color: rgb(66,156,227)}")
+            self.children()[1].setText(" 保存")
+            self.children()[1].setStyleSheet("QPushButton{  \
+                                                width: 96px\
+                                            }")
+            self.children()[7].setText(" 编辑")
+            self.children()[7].setStyleSheet("QPushButton{  \
+                                                            width: 96px\
+                                                        }")
