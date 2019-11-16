@@ -64,24 +64,24 @@ def __prewitt_gradient(src: np.ndarray):
     return np.uint8(t)
 
 
-def robertOperator(src: np.ndarray):
+def robert_operator(src: np.ndarray):
     return __do_edge_detect(src, __robert_gradient)
 
 
-def sobelOperator(src: np.ndarray):
+def sobel_operator(src: np.ndarray):
     return __do_edge_detect(src, __sobel_gradient)
 
 
-def prewittOperator(src: np.ndarray):
+def prewitt_operator(src: np.ndarray):
     return __do_edge_detect(src, __prewitt_gradient)
 
 
 def main():
     img = cv.imread("../resource/lena.jpg", cv.IMREAD_UNCHANGED)
     cv.imshow("source image", img)
-    cv.imshow("roberts edge", robertOperator(img))
-    cv.imshow("prewitt edge", prewittOperator(img))
-    cv.imshow("sobel edge", sobelOperator(img))
+    cv.imshow("roberts edge", robert_operator(img))
+    cv.imshow("prewitt edge", prewitt_operator(img))
+    cv.imshow("sobel edge", sobel_operator(img))
     cv.waitKey(0)
     cv.destroyAllWindows()
 
