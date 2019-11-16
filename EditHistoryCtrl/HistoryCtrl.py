@@ -12,8 +12,8 @@ class HistoryCtrl:
         self.history_des = []
 
     def push(self, src: np.ndarray, desc: str):
-        self.history_src[self.position] = src
-        self.history_des[self.position] = desc
+        self.history_src.append(src)
+        self.history_des.append(desc)
         self.position += 1
 
     def clear(self):

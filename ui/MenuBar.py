@@ -1,10 +1,6 @@
-from PyQt5.QtCore import QRect, QSize
+from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout, QSizePolicy
-from ui.RightWindow import RightWindow
-from .dialog import FileDialog
-from .popupWindow import MorePopup
-
 
 
 class MenuButton(QPushButton):
@@ -24,8 +20,6 @@ class MenuBar(QWidget):
     __rotate_icon_url = "./resource/rotate_icon.png"
     __more_icon_url = "./resource/more_icon.png"
     __edit_icon_url = "./resource/edit_icon.png"
-    file_dialog = None
-    more_popup = None
     image_btn = None
     save_btn = None
     magnifier_btn = None
@@ -36,12 +30,12 @@ class MenuBar(QWidget):
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
-        self.file_dialog = FileDialog(self.parent())
-        self.more_popup = MorePopup(self.parent())
         self.draw_menubar()
 
     def draw_menubar(self):
-        self.setGeometry(0, 0, self.parent().width(), self.menubar_height)  # Fixed origin
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.setFixedWidth(self.parent().width())
+        self.setFixedHeight(self.menubar_height)
         layout = QHBoxLayout()
         left_layout = QHBoxLayout()
         middle_layout = QHBoxLayout()
@@ -65,7 +59,7 @@ class MenuBar(QWidget):
         layout.addWidget(image_btn)
         image_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         image_btn.setShortcut("Ctrl+O")
-        image_btn.clicked.connect(self.file_dialog.open_image)
+        image_btn.clicked.connect(self.parent().file_dialog.open_image)
         image_btn.setStyleSheet("QPushButton{\
                                     background-color: rgb(0,120,215); \
                                     color: #fff; \
@@ -77,7 +71,7 @@ class MenuBar(QWidget):
         layout.addWidget(save_btn)
         save_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         save_btn.setShortcut("Ctrl+S")
-        save_btn.clicked.connect(self.file_dialog.save_image)
+        save_btn.clicked.connect(self.parent().file_dialog.save_image)
         save_btn.setStyleSheet("QPushButton{ \
                                     width: 96px; \
                                 }")
@@ -111,15 +105,16 @@ class MenuBar(QWidget):
                                             width: 90px\
                                         }")
         edit_btn.clicked.connect(self.parent().right_window.toggle)
+        edit_btn.clicked.connect(self.parent().more_popup.on_menubar_clicked)
+        edit_btn.clicked.connect(self.parent().image_window.on_right_window_toggle)
         layout.addWidget(edit_btn)
-
         more_btn = MenuButton(self)
         more_btn.setIcon(QIcon(self.__more_icon_url))
-        more_btn.clicked.connect(self.more_popup.toggle)
+        more_btn.clicked.connect(self.parent().more_popup.toggle)
         layout.addWidget(more_btn)
 
     def on_window_resize(self, width, height):
-        self.setGeometry(0, 0, width, self.menubar_height)
+        self.setFixedWidth(width)
         if width < self.min_optimal_width:
             self.children()[0].setText("")
             self.children()[0].setStyleSheet("QPushButton{\

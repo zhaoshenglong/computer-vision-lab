@@ -1,9 +1,8 @@
 from enum import IntEnum
-
-from PyQt5 import QtGui, Qt
-from PyQt5.QtCore import QPropertyAnimation, QRect, pyqtSignal
-from PyQt5.QtGui import QColor, QIcon, QCursor
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGraphicsDropShadowEffect, QSizePolicy, QSpacerItem, \
+from PyQt5 import Qt
+from PyQt5.QtCore import QPropertyAnimation, QRect
+from PyQt5.QtGui import QIcon, QCursor
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSizePolicy, \
     QLabel, QHBoxLayout, QSlider, QButtonGroup, QAbstractButton
 
 
@@ -37,6 +36,7 @@ class RightWindow(QWidget):
     __width = 320
     __height = 900
 
+    close_btn: QPushButton
     gray_slider: QSlider
     tone_slider: QSlider
     warm_slider: QSlider
@@ -53,12 +53,18 @@ class RightWindow(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.__height = self.parent().height() - 60
-        print(self.__height)
 
     def show_popup(self):
         if self.status == Status.INACTIVE:
             self.status = Status.ACTIVE
             self.init_ui()
+            self.gray_slider.valueChanged.connect(self.on_gray_slider_change)
+            self.tone_slider.valueChanged.connect(self.on_gray_slider_change)
+            self.warm_slider.valueChanged.connect(self.on_gray_slider_change)
+            self.filter_button_group.buttonReleased.connect(self.on_filter_clicked)
+            self.edge_detection_button_group.buttonReleased.connect(self.on_edge_btn_clicked)
+            self.close_btn.clicked.connect(self.hide_popup)
+            self.close_btn.clicked.connect(self.parent().image_window.on_right_window_toggle)
         else:
             self.status = Status.ACTIVE
             self.show()
@@ -85,8 +91,9 @@ class RightWindow(QWidget):
             self.show_popup()
 
     def init_ui(self):
-        self.setGeometry(QRect(self.parent().width() - self.__width, 60, self.__width, self.__height))
-        self.setStyleSheet("QWidget#RightWindow{background-color: red;}")
+        # self.setGeometry(QRect(self.parent().width() - self.__width, 60, self.__width, self.__height))
+        self.setFixedWidth(self.__width)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -108,16 +115,15 @@ class RightWindow(QWidget):
         title_label = QLabel("编辑", header)
         title_label.setStyleSheet("QLabel{font-size: 24px;}")
 
-        close_btn = QPushButton(self)
-        close_btn.setIcon(QIcon(self.close_icon_url))
-        close_btn.setStyleSheet("QPushButton{ \
+        self.close_btn = QPushButton(self)
+        self.close_btn.setIcon(QIcon(self.close_icon_url))
+        self.close_btn.setStyleSheet("QPushButton{ \
                                             border: none; \
                                             margin-right: 16px; \
                                          }")
-        close_btn.clicked.connect(self.hide_popup)
         header_layout.addWidget(title_label)
         header_layout.addStretch(1)
-        header_layout.addWidget(close_btn)
+        header_layout.addWidget(self.close_btn)
         header.setLayout(header_layout)
         layout.addWidget(header)
 
@@ -135,7 +141,7 @@ class RightWindow(QWidget):
         self.gray_slider.setValue(0)
         self.gray_slider.setMaximum(100)
         self.gray_slider.setTracking(True)
-        self.gray_slider.valueChanged.connect(self.on_gray_slider_change)
+
         tone_label = QLabel("色调", self)
         tone_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.tone_slider = QSlider(Qt.Qt.Horizontal, self)
@@ -143,7 +149,6 @@ class RightWindow(QWidget):
         self.tone_slider.setValue(0)
         self.tone_slider.setMaximum(100)
         self.tone_slider.setTracking(True)
-        self.tone_slider.valueChanged.connect(self.on_gray_slider_change)
 
         warm_label = QLabel("色暖", self)
         warm_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -152,7 +157,6 @@ class RightWindow(QWidget):
         self.warm_slider.setValue(0)
         self.warm_slider.setMaximum(100)
         self.warm_slider.setTracking(True)
-        self.warm_slider.valueChanged.connect(self.on_gray_slider_change)
         layout.addWidget(gray_label)
         layout.addWidget(self.gray_slider)
         layout.addWidget(tone_label)
@@ -172,6 +176,10 @@ class RightWindow(QWidget):
                                         background-color: #ddd;  \
                                         height: 40px;           \
                                         border: none;           \
+                                    }\
+                                    QPushButton:hover{ \
+                                        background-color: #0078d7;  \
+                                        color: #fff; \
                                     }")
         button_group.setCursor(QCursor(Qt.Qt.PointingHandCursor))
         group_box = QHBoxLayout()
@@ -181,7 +189,6 @@ class RightWindow(QWidget):
         self.filter_button_group.addButton(self.median_filter_btn, Identifier.MEDIAN_FILTER)
         self.filter_button_group.addButton(self.mean_filter_btn, Identifier.MEAN_FILTER)
         self.filter_button_group.addButton(self.gaussian_filter_btn, Identifier.GAUSSIAN_FILTER)
-        self.filter_button_group.buttonReleased.connect(self.on_filter_clicked)
         group_box.addWidget(self.median_filter_btn)
         group_box.addWidget(self.mean_filter_btn)
         group_box.addWidget(self.gaussian_filter_btn)
@@ -199,10 +206,14 @@ class RightWindow(QWidget):
         self.edge_detection_button_group = QButtonGroup(self)
         button_group = QWidget(self)
         button_group.setStyleSheet("QPushButton{ \
-                                                background-color: #ddd;  \
-                                                height: 40px;           \
-                                                border: none;           \
-                                            }")
+                                        background-color: #ddd;  \
+                                        height: 40px;            \
+                                        border: none;            \
+                                    }\
+                                    QPushButton:hover{ \
+                                        background-color: #0078d7;  \
+                                        color: #fff; \
+                                    }")
         button_group.setCursor(QCursor(Qt.Qt.PointingHandCursor))
         group_box = QHBoxLayout()
         self.robert_btn = QPushButton("Robert", self)
@@ -211,7 +222,6 @@ class RightWindow(QWidget):
         self.edge_detection_button_group.addButton(self.robert_btn, Identifier.ROBERT)
         self.edge_detection_button_group.addButton(self.sobel_btn, Identifier.SOBEL)
         self.edge_detection_button_group.addButton(self.prewitt_btn, Identifier.PREWITT)
-        self.edge_detection_button_group.buttonReleased.connect(self.on_edge_btn_clicked)
         group_box.addWidget(self.robert_btn)
         group_box.addWidget(self.sobel_btn)
         group_box.addWidget(self.prewitt_btn)
@@ -219,7 +229,11 @@ class RightWindow(QWidget):
         group_box.setContentsMargins(20, 0, 20, 0)
         button_group.setLayout(group_box)
         layout.addWidget(button_group)
-        layout.addStretch(1)
+
+        # take up remained space
+        spacer = QWidget(self)
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        layout.addWidget(spacer)
 
     def on_gray_slider_change(self, v: int):
         # print(self.gray_slider.value())
@@ -231,5 +245,6 @@ class RightWindow(QWidget):
     def on_edge_btn_clicked(self, btn: QAbstractButton):
         print(self.edge_detection_button_group.id(btn))
 
-    def on_window_clicked(self):
-        pass
+    def on_window_resize(self, width, height):
+        if self.status == Status.ACTIVE:
+            self.setGeometry(width - self.__width, 60, self.__width, self.__height)

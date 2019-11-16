@@ -8,15 +8,14 @@ class FileDialog(QFileDialog):
 
     def __init__(self, parent):
         super(QFileDialog, self).__init__(parent)
+        self.fileSelected.connect(self.parent().update_open_image)
+        self.fileSelected.connect(self.parent().image_window.on_image_open)
 
     def open_image(self):
         image, image_t = QFileDialog.getOpenFileName(self.parent(), self.FileDialogTitle, os.getcwd(),
                                                      "Image Files(*.jpg *.jpeg *.png)")
         if image != "":
-            print(image, image_t)
-            return image
-        else:
-            print("You haven't choose a picture")
+            self.fileSelected.emit(image)
 
     def save_image(self):
         print("You are saving image")

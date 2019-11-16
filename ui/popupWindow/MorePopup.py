@@ -34,7 +34,7 @@ class MorePopup(QWidget):
         shadow.setOffset(-5, 10)
         self.setGraphicsEffect(shadow)
 
-    def showPopup(self):
+    def show_popup(self):
         if self.status == Status.INACTIVE:
             self.status = Status.ACTIVE
             self.init_ui()
@@ -48,7 +48,7 @@ class MorePopup(QWidget):
             QRect(self.parent().width() - self.__width, 60, self.__width, self.__height))
         self.geometry_animation.start()
 
-    def hidePopup(self):
+    def hide_popup(self):
         self.status = Status.HIDE
         assert (self.geometry_animation is not None)
         self.geometry_animation.setDuration(100)
@@ -59,9 +59,9 @@ class MorePopup(QWidget):
 
     def toggle(self):
         if self.status == Status.ACTIVE:
-            self.hidePopup()
+            self.hide_popup()
         else:
-            self.showPopup()
+            self.show_popup()
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -82,8 +82,12 @@ class MorePopup(QWidget):
         if self.status == Status.ACTIVE and \
                 (not self.geometry().x() - 2 < x < self.geometry().x() + self.geometry().width() + 2 or
                  not self.geometry().y() - 2 < y < self.geometry().y() + self.geometry().height() + 2):
-            self.hidePopup()
+            self.hide_popup()
 
     def on_window_resize(self):
         if self.status == Status.ACTIVE:
-            self.hidePopup()
+            self.hide_popup()
+
+    def on_menubar_clicked(self):
+        if self.status == Status.ACTIVE:
+            self.hide_popup()
