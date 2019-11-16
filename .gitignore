@@ -1,4 +1,7 @@
 .idea
 __pycache__
-util/__pycache__/*
-ui/__pycache__/*
+util/__pycache__
+ui/__pycache__
+resource/__pycache__
+dist
+build

@@ -18,4 +18,10 @@ class FileDialog(QFileDialog):
             self.fileSelected.emit(image)
 
     def save_image(self):
-        print("You are saving image")
+        image, select_folder = QFileDialog.getSaveFileName(self.parent(), self.FileDialogTitle, os.getcwd(),
+                                                           "Images (*.png *.bmp *.jpg  *.gif *.jpeg)",
+                                                           options=QFileDialog.ShowDirsOnly
+                                                                   | QFileDialog.DontResolveSymlinks
+                                                           )
+        if image != "":
+            print(image, select_folder)

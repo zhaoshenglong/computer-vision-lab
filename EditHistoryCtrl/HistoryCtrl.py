@@ -18,21 +18,33 @@ class HistoryCtrl:
         else:
             self.history_src[self.position] = src
             self.history_des[self.position] = desc
+            self.history_src = self.history_src[:self.position + 1]
+            self.history_des = self.history_des[:self.position + 1]
         self.position += 1
 
     def clear(self):
         self.history_src = []
         self.history_des = []
+        self.position = 0
 
     def get(self, pos: int):
-        assert (0 <= pos < self.position)
+        assert (0 <= pos < self.history_src.__len__())
         return self.history_des[pos], self.history_src[pos]
 
     def current(self) -> np.ndarray:
         return self.history_src[self.position - 1]
 
     def undo(self):
-        self.position -= 1
+        print("undo %d" % self.position)
+        if self.position > 1:
+            self.position -= 1
 
     def redo(self):
-        self.position += 1
+        if self.position < self.history_src.__len__():
+            self.position += 1
+
+    def undo_disable(self):
+        return self.position <= 1
+
+    def redo_disable(self):
+        return self.position >= self.history_src.__len__()

@@ -1,7 +1,7 @@
-from PyQt5 import Qt, QtGui
+from PyQt5 import Qt
 from PyQt5.QtCore import QRect, QRegExp
 from PyQt5.QtGui import QIntValidator, QRegExpValidator
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QWidget, QLineEdit
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QLineEdit
 
 from util import Actions
 

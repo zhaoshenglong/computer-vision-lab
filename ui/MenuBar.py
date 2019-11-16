@@ -15,18 +15,22 @@ class MenuBar(QWidget):
     __save_icon_url = "./resource/save_icon.png"
     __magnifier_plus_url = "./resource/magnifier_plus_icon.png"
     __undo_icon_url = "./resource/undo_icon.png"
+    __undo_icon_disable_url = "./resource/undo_icon_disable.png"
     __redo_icon_url = "./resource/redo_icon.png"
+    __redo_icon_disable_url = "./resource/redo_icon_disable.png"
     __cut_icon_url = "./resource/cut_icon.png"
     __rotate_icon_url = "./resource/rotate_icon.png"
     __more_icon_url = "./resource/more_icon.png"
     __edit_icon_url = "./resource/edit_icon.png"
-    image_btn = None
-    save_btn = None
-    magnifier_btn = None
-    undo_btn = None
-    redo_btn = None
-    cut_btn = None
-    rotate_btn = None
+    image_btn: MenuButton
+    save_btn: MenuButton
+    magnifier_btn: MenuButton
+    undo_btn: MenuButton
+    redo_btn: MenuButton
+    cut_btn: MenuButton
+    rotate_btn: MenuButton
+    edit_btn: MenuButton
+    more_btn: MenuButton
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
@@ -55,65 +59,71 @@ class MenuBar(QWidget):
 
     def draw_left_layout(self, layout):
         layout.setSpacing(0)
-        image_btn = MenuButton(QIcon(self.__image_icon_url), " 打开图片", self)
-        layout.addWidget(image_btn)
-        image_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        image_btn.setShortcut("Ctrl+O")
-        image_btn.clicked.connect(self.parent().file_dialog.open_image)
-        image_btn.setStyleSheet("QPushButton{\
+        self.image_btn = MenuButton(QIcon(self.__image_icon_url), " 打开图片", self)
+        layout.addWidget(self.image_btn)
+        self.image_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.image_btn.setShortcut("Ctrl+O")
+        self.image_btn.clicked.connect(self.parent().file_dialog.open_image)
+        self.image_btn.setStyleSheet("QPushButton{\
                                     background-color: rgb(0,120,215); \
                                     color: #fff; \
                                     width: 130px; \
                                 } \
                                 QPushButton:hover{\
                                 background-color: rgb(66,156,227)}")
-        save_btn = MenuButton(QIcon(self.__save_icon_url), " 保存", self)
-        layout.addWidget(save_btn)
-        save_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        save_btn.setShortcut("Ctrl+S")
-        save_btn.clicked.connect(self.parent().file_dialog.save_image)
-        save_btn.setStyleSheet("QPushButton{ \
+        self.save_btn = MenuButton(QIcon(self.__save_icon_url), " 保存", self)
+        layout.addWidget(self.save_btn)
+        self.save_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.save_btn.setShortcut("Ctrl+S")
+        self.save_btn.clicked.connect(self.parent().image_window.save_image)
+        self.save_btn.clicked.connect(self.parent().imageSaveEvent)
+        self.save_btn.setStyleSheet("QPushButton{ \
                                     width: 96px; \
                                 }")
 
     def draw_middle_layout(self, layout):
         layout.setSpacing(0)
-        magnifier_btn = MenuButton(self)
-        magnifier_btn.setIcon(QIcon(self.__magnifier_plus_url))
-        magnifier_btn.setIconSize(QSize(30, 30))
-        magnifier_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        layout.addWidget(magnifier_btn)
-        undo_btn = MenuButton(self)
-        undo_btn.setIcon(QIcon(self.__undo_icon_url))
-        undo_btn.setShortcut("Ctrl+Z")
-        layout.addWidget(undo_btn)
-        redo_btn = MenuButton(self)
-        redo_btn.setIcon(QIcon(self.__redo_icon_url))
-        redo_btn.setShortcut("Ctrl+Y")
-        layout.addWidget(redo_btn)
-        cut_btn = MenuButton(self)
-        cut_btn.setIcon(QIcon(self.__cut_icon_url))
-        layout.addWidget(cut_btn)
+        self.magnifier_btn = MenuButton(self)
+        self.magnifier_btn.setIcon(QIcon(self.__magnifier_plus_url))
+        self.magnifier_btn.setIconSize(QSize(30, 30))
+        self.magnifier_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        layout.addWidget(self.magnifier_btn)
+        self.undo_btn = MenuButton(self)
+        self.undo_btn.setIcon(QIcon(self.__undo_icon_disable_url))
+        self.undo_btn.setStyleSheet("QPushButton:hover{background-color: #fff}")
+        self.undo_btn.setShortcut("Ctrl+Z")
+        layout.addWidget(self.undo_btn)
+        self.undo_btn.clicked.connect(self.parent().image_window.on_undo)
+
+        self.redo_btn = MenuButton(self)
+        self.redo_btn.setIcon(QIcon(self.__redo_icon_disable_url))
+        self.redo_btn.setShortcut("Ctrl+Y")
+        self.redo_btn.setStyleSheet("QPushButton:hover{background-color: #fff}")
+        self.redo_btn.clicked.connect(self.parent().image_window.on_redo)
+        layout.addWidget(self.redo_btn)
+        self.cut_btn = MenuButton(self)
+        self.cut_btn.setIcon(QIcon(self.__cut_icon_url))
+        layout.addWidget(self.cut_btn)
         rotate_btn = MenuButton(self)
         rotate_btn.setIcon(QIcon(self.__rotate_icon_url))
         layout.addWidget(rotate_btn)
 
     def draw_right_layout(self, layout):
         layout.setSpacing(0)
-        edit_btn = MenuButton(self)
-        edit_btn.setIcon(QIcon(self.__edit_icon_url))
-        edit_btn.setText(" 编辑")
-        edit_btn.setStyleSheet("QPushButton{  \
+        self.edit_btn = MenuButton(self)
+        self.edit_btn.setIcon(QIcon(self.__edit_icon_url))
+        self.edit_btn.setText(" 编辑")
+        self.edit_btn.setStyleSheet("QPushButton{  \
                                             width: 90px\
                                         }")
-        edit_btn.clicked.connect(self.parent().right_window.toggle)
-        edit_btn.clicked.connect(self.parent().more_popup.on_menubar_clicked)
-        edit_btn.clicked.connect(self.parent().image_window.on_right_window_toggle)
-        layout.addWidget(edit_btn)
-        more_btn = MenuButton(self)
-        more_btn.setIcon(QIcon(self.__more_icon_url))
-        more_btn.clicked.connect(self.parent().more_popup.toggle)
-        layout.addWidget(more_btn)
+        self.edit_btn.clicked.connect(self.parent().right_window.toggle)
+        self.edit_btn.clicked.connect(self.parent().more_popup.on_menubar_clicked)
+        self.edit_btn.clicked.connect(self.parent().image_window.on_right_window_toggle)
+        layout.addWidget(self.edit_btn)
+        self.more_btn = MenuButton(self)
+        self.more_btn.setIcon(QIcon(self.__more_icon_url))
+        self.more_btn.clicked.connect(self.parent().more_popup.toggle)
+        layout.addWidget(self.more_btn)
 
     def on_window_resize(self, width, height):
         self.setFixedWidth(width)
@@ -151,3 +161,21 @@ class MenuBar(QWidget):
             self.children()[7].setStyleSheet("QPushButton{  \
                                                             width: 96px\
                                                         }")
+
+    def toggle_redo_btn(self ):
+        disable = self.parent().image_window.history_ctrl.redo_disable()
+        if disable:
+            self.redo_btn.setIcon(QIcon(self.__redo_icon_disable_url))
+            self.redo_btn.setStyleSheet("QPushButton:hover{background-color: #fff}")
+        else:
+            self.redo_btn.setIcon(QIcon(self.__redo_icon_url))
+            self.redo_btn.setStyleSheet("QPushButton:hover{background-color: #e6e6e6;}")
+
+    def toggle_undo_btn(self):
+        disable = self.parent().image_window.history_ctrl.undo_disable()
+        if not disable:
+            self.undo_btn.setIcon(QIcon(self.__undo_icon_url))
+            self.undo_btn.setStyleSheet("QPushButton:hover{background-color: #e6e6e6;}")
+        else:
+            self.undo_btn.setIcon(QIcon(self.__undo_icon_disable_url))
+            self.undo_btn.setStyleSheet("QPushButton:hover{background-color: #fff}")

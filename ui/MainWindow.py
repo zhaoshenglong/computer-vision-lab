@@ -1,15 +1,14 @@
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QRect
-from PyQt5.QtGui import QIcon, QFont, QCloseEvent
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QHBoxLayout, QWidget, QFileDialog, QVBoxLayout, QStatusBar, \
-    QSizePolicy, QLabel, QPushButton, QLayout, QMessageBox
+from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QWidget, QFileDialog, QStatusBar, \
+    QMessageBox
 
 from ui.ImageWindow import ImageWindow
 from ui.RightWindow import RightWindow
 from ui.dialog import FileDialog
 from ui.dialog.FilterDialog import FilterDialog
 from ui.popupWindow import MorePopup
-from util import QSSHelper, Actions
+from util import QSSHelper
 from .MenuBar import MenuBar
 
 
@@ -23,8 +22,8 @@ class MainWindow(QMainWindow):
     __open_image_url = ""
     __window_title = "PhotoShark"
 
-    __menubar: QWidget
-    __statusbar: QStatusBar
+    menubar: QWidget
+    statusbar: QStatusBar
     right_window: QWidget
     image_window: QWidget
     file_dialog: QFileDialog
@@ -52,7 +51,7 @@ class MainWindow(QMainWindow):
         self.image_window = ImageWindow(self)
         self.file_dialog = FileDialog(self)
         self.more_popup = MorePopup(self)
-        self.__menubar = MenuBar(self)
+        self.menubar = MenuBar(self)
 
         # Connect signal and slot
         self.init_signal_connection()
@@ -75,7 +74,7 @@ class MainWindow(QMainWindow):
 
     def init_signal_connection(self):
         self.__ls_click_sig.connect(self.more_popup.on_window_clicked)
-        self.__resize_sig.connect(self.__menubar.on_window_resize)
+        self.__resize_sig.connect(self.menubar.on_window_resize)
         self.__resize_sig.connect(self.more_popup.on_window_resize)
         self.__resize_sig.connect(self.right_window.on_window_resize)
         self.__resize_sig.connect(self.image_window.on_window_resize)
@@ -89,6 +88,7 @@ class MainWindow(QMainWindow):
     def update_open_image(self, open_image_url: str):
         self.__open_image_url = open_image_url
         self.set_window_title()
+        self.saved = True
 
     def closeEvent(self, ev: QtGui.QCloseEvent) -> None:
         if not self.saved:
@@ -101,6 +101,9 @@ class MainWindow(QMainWindow):
 
     def imageEditEvent(self):
         self.saved = False
+
+    def imageSaveEvent(self):
+        self.saved = True
 
     def openFilterEvent(self, action: int):
         filter_dialog = FilterDialog(self, action)

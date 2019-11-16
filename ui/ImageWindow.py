@@ -1,4 +1,3 @@
-from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy
@@ -21,7 +20,7 @@ class ImageWindow(QWidget):
 
     img_box: QLabel
     pixmap: QPixmap
-    img_edit_sig = pyqtSignal()
+    __img_edit_sig = pyqtSignal()
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
@@ -42,12 +41,12 @@ class ImageWindow(QWidget):
         layout.addStretch(1)
         self.img_box = QLabel(self)
         # For test
-        self.draw_pixmap("./resource/icon.png")
+        # self.draw_pixmap("./resource/icon.png")
         layout.addWidget(self.img_box)
         layout.addStretch(1)
         self.setLayout(layout)
 
-        self.img_edit_sig.connect(self.parent().imageEditEvent)
+        self.__img_edit_sig.connect(self.parent().imageEditEvent)
 
     def draw_pixmap(self, img_path):
         if img_path != "":
@@ -58,7 +57,6 @@ class ImageWindow(QWidget):
 
     def draw_pixmap_cv(self, img: QImage):
         self.pixmap = QPixmap.fromImage(img)
-        print("fuck!!!!!! pixmap")
         self.img_box.setPixmap(self.pixmap)
 
     def on_image_open(self, img_path: str):
@@ -67,9 +65,10 @@ class ImageWindow(QWidget):
         self.history_ctrl.clear()
         self.history_ctrl.push(img_array, "打开 %s" % img_path[img_path.rfind("/") + 1:])
         self.draw_pixmap(img_path)
+        self.parent().menubar.toggle_undo_btn()
+        self.parent().menubar.toggle_redo_btn()
 
     def on_image_edit(self, action: int, param: tuple = None):
-        print("action %d" % action)
         ks: int
         sigma: float
         img_array: np.ndarray
@@ -99,11 +98,10 @@ class ImageWindow(QWidget):
             print("裁剪")
         else:
             print("No match action for %d" % action)
-        print("start draw")
         self.draw_pixmap_cv(self.from_cv_array(self.history_ctrl.current()))
-        cv.imshow("mean", self.history_ctrl.current())
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        self.__img_edit_sig.emit()
+        self.parent().menubar.toggle_undo_btn()
+        self.parent().menubar.toggle_redo_btn()
 
     def from_cv_array(self, img_array):
         height = img_array.shape[0]
@@ -112,9 +110,7 @@ class ImageWindow(QWidget):
         img: QImage
         if type(img_array[0][0]) == np.ndarray:
             channel = img_array.shape[2]
-        print(height, width, channel)
         bytes_per_line = 3 * width
-        print(height, width, channel)
         if channel == 0:
             img = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
         elif channel == 3:
@@ -124,9 +120,6 @@ class ImageWindow(QWidget):
         else:
             img = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_Invalid)
         return img
-
-    def mouseMoveEvent(self, a0: QtGui.QMouseEvent) -> None:
-        pass
 
     def on_window_resize(self, width, height):
         if self.is_right_window_open:
@@ -143,3 +136,21 @@ class ImageWindow(QWidget):
         else:
             self.is_right_window_open = True
             self.setFixedWidth(self.parent().width() - 320)     # right_window width is 320px
+
+    def on_undo(self):
+        if not self.history_ctrl.undo_disable():
+            self.history_ctrl.undo()
+            self.draw_pixmap_cv(self.from_cv_array(self.history_ctrl.current()))
+        self.parent().menubar.toggle_undo_btn()
+        self.parent().menubar.toggle_redo_btn()
+
+    def on_redo(self):
+        if not self.history_ctrl.redo_disable():
+            self.history_ctrl.redo()
+            self.draw_pixmap_cv(self.from_cv_array(self.history_ctrl.current()))
+        self.parent().menubar.toggle_undo_btn()
+        self.parent().menubar.toggle_redo_btn()
+
+    def save_image(self):
+        cv.imwrite(self.img_url, self.history_ctrl.current())
+        print("write ok")
