@@ -1,15 +1,15 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QRect
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QCloseEvent
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QHBoxLayout, QWidget, QFileDialog, QVBoxLayout, QStatusBar, \
-    QSizePolicy, QLabel, QPushButton, QLayout
+    QSizePolicy, QLabel, QPushButton, QLayout, QMessageBox
 
-from EditHistoryCtrl import HistoryCtrl
 from ui.ImageWindow import ImageWindow
 from ui.RightWindow import RightWindow
 from ui.dialog import FileDialog
+from ui.dialog.FilterDialog import FilterDialog
 from ui.popupWindow import MorePopup
-from util import QSSHelper
+from util import QSSHelper, Actions
 from .MenuBar import MenuBar
 
 
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
 
     __ls_click_sig = QtCore.pyqtSignal(int, int)
     __resize_sig = QtCore.pyqtSignal(int, int)
-    __image_change_sig = QtCore.pyqtSignal(str)
+    saved = True
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -79,7 +79,6 @@ class MainWindow(QMainWindow):
         self.__resize_sig.connect(self.more_popup.on_window_resize)
         self.__resize_sig.connect(self.right_window.on_window_resize)
         self.__resize_sig.connect(self.image_window.on_window_resize)
-        self.__image_change_sig.connect(self.image_window.on_image_change)
 
     def mouseReleaseEvent(self, ev: QtGui.QMouseEvent) -> None:
         self.__ls_click_sig.emit(ev.x(), ev.y())
@@ -90,3 +89,22 @@ class MainWindow(QMainWindow):
     def update_open_image(self, open_image_url: str):
         self.__open_image_url = open_image_url
         self.set_window_title()
+
+    def closeEvent(self, ev: QtGui.QCloseEvent) -> None:
+        if not self.saved:
+            confirm = QMessageBox.question(self, "是否退出", "当前所做的修改将会丢失", QMessageBox.Yes | QMessageBox.Cancel)
+            if confirm == QMessageBox.Yes:
+                ev.accept()
+            else:
+                print(confirm)
+                ev.ignore()
+
+    def imageEditEvent(self):
+        self.saved = False
+
+    def openFilterEvent(self, action: int):
+        filter_dialog = FilterDialog(self, action)
+        if filter_dialog.exec_() == 1:
+            print("modify image")
+        else:
+            print("canceled")

@@ -5,6 +5,8 @@ from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSizePolicy, \
     QLabel, QHBoxLayout, QSlider, QButtonGroup, QAbstractButton
 
+from util import Actions
+
 
 class Status(IntEnum):
     INACTIVE = 0
@@ -14,15 +16,6 @@ class Status(IntEnum):
 
 class ToolButton(QPushButton):
     pass
-
-
-class Identifier(IntEnum):
-    MEDIAN_FILTER = 0X7001
-    MEAN_FILTER = 0X7002
-    GAUSSIAN_FILTER = 0X7003
-    ROBERT = 0X7004
-    SOBEL = 0X7005
-    PREWITT = 0X7006
 
 
 '''
@@ -62,7 +55,12 @@ class RightWindow(QWidget):
             self.tone_slider.valueChanged.connect(self.on_gray_slider_change)
             self.warm_slider.valueChanged.connect(self.on_gray_slider_change)
             self.filter_button_group.buttonReleased.connect(self.on_filter_clicked)
+            self.filter_button_group.buttonReleased.connect(
+                lambda b: self.parent().openFilterEvent(self.filter_button_group.id(b))
+            )
             self.edge_detection_button_group.buttonReleased.connect(self.on_edge_btn_clicked)
+            self.edge_detection_button_group.buttonReleased.connect(
+                lambda b: self.parent().image_window.on_image_edit(self.edge_detection_button_group.id(b)))
             self.close_btn.clicked.connect(self.hide_popup)
             self.close_btn.clicked.connect(self.parent().image_window.on_right_window_toggle)
         else:
@@ -186,9 +184,9 @@ class RightWindow(QWidget):
         self.median_filter_btn = QPushButton("中值", self)
         self.mean_filter_btn = QPushButton("均值", self)
         self.gaussian_filter_btn = QPushButton("高斯", self)
-        self.filter_button_group.addButton(self.median_filter_btn, Identifier.MEDIAN_FILTER)
-        self.filter_button_group.addButton(self.mean_filter_btn, Identifier.MEAN_FILTER)
-        self.filter_button_group.addButton(self.gaussian_filter_btn, Identifier.GAUSSIAN_FILTER)
+        self.filter_button_group.addButton(self.median_filter_btn, Actions.MEDIAN_FILTER)
+        self.filter_button_group.addButton(self.mean_filter_btn, Actions.MEAN_FILTER)
+        self.filter_button_group.addButton(self.gaussian_filter_btn, Actions.GAUSSIAN_FILTER)
         group_box.addWidget(self.median_filter_btn)
         group_box.addWidget(self.mean_filter_btn)
         group_box.addWidget(self.gaussian_filter_btn)
@@ -219,9 +217,9 @@ class RightWindow(QWidget):
         self.robert_btn = QPushButton("Robert", self)
         self.sobel_btn = QPushButton("Sobel", self)
         self.prewitt_btn = QPushButton("Prewitt", self)
-        self.edge_detection_button_group.addButton(self.robert_btn, Identifier.ROBERT)
-        self.edge_detection_button_group.addButton(self.sobel_btn, Identifier.SOBEL)
-        self.edge_detection_button_group.addButton(self.prewitt_btn, Identifier.PREWITT)
+        self.edge_detection_button_group.addButton(self.robert_btn, Actions.ROBERT)
+        self.edge_detection_button_group.addButton(self.sobel_btn, Actions.SOBEL)
+        self.edge_detection_button_group.addButton(self.prewitt_btn, Actions.PREWITT)
         group_box.addWidget(self.robert_btn)
         group_box.addWidget(self.sobel_btn)
         group_box.addWidget(self.prewitt_btn)
@@ -236,14 +234,41 @@ class RightWindow(QWidget):
         layout.addWidget(spacer)
 
     def on_gray_slider_change(self, v: int):
-        # print(self.gray_slider.value())
+        print(self.gray_slider.value())
         pass
 
     def on_filter_clicked(self, btn: QAbstractButton):
         print(self.filter_button_group.id(btn))
+        for b in self.filter_button_group.buttons():
+            b.setStyleSheet("QPushButton{ \
+                                        background-color: #ddd;  \
+                                        height: 40px;            \
+                                        border: none;            \
+                                    }\
+                                    QPushButton:hover{ \
+                                        background-color: #0078d7;  \
+                                        color: #fff; \
+                                    }")
+        btn.setStyleSheet("QPushButton{ \
+                                background-color: #0078d7;  \
+                                color: #fff; \
+                            }")
 
     def on_edge_btn_clicked(self, btn: QAbstractButton):
-        print(self.edge_detection_button_group.id(btn))
+        for b in self.edge_detection_button_group.buttons():
+            b.setStyleSheet("QPushButton{ \
+                                        background-color: #ddd;  \
+                                        height: 40px;            \
+                                        border: none;            \
+                                    }\
+                                    QPushButton:hover{ \
+                                        background-color: #0078d7;  \
+                                        color: #fff; \
+                                    }")
+        btn.setStyleSheet("QPushButton{ \
+                                background-color: #0078d7;  \
+                                color: #fff; \
+                            }")
 
     def on_window_resize(self, width, height):
         if self.status == Status.ACTIVE:
