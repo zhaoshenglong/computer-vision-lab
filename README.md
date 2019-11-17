@@ -6,6 +6,10 @@ This is a simple image processor building with `Qt` & `opencv`. For GUI, it refe
 
 ![](./readme_imgs/app.png)
 
+## NOTE
+These functions are implemented without improvements, thus performance is bad. For better use, it is recommended that you
+should open with `lena.png`, which is in our root folder
+
 ## Usage
 Make sure resource folder and qss folder are in the same folder with application.
 

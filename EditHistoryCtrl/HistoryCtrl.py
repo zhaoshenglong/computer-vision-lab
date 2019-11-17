@@ -48,3 +48,6 @@ class HistoryCtrl:
 
     def redo_disable(self):
         return self.position >= self.history_src.__len__()
+
+    def is_empty(self):
+        return self.position == 0

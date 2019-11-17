@@ -72,6 +72,8 @@ class ImageWindow(QWidget):
         ks: int
         sigma: float
         img_array: np.ndarray
+        if self.history_ctrl.is_empty():
+            return
         if action == Actions.ROBERT:
             img_array = PSharkApi.robert_operator(self.history_ctrl.current())
             self.history_ctrl.push(img_array, "Robert算子")

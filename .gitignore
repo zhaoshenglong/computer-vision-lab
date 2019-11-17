@@ -5,3 +5,4 @@ ui/__pycache__
 resource/__pycache__
 dist
 build
+*.zip
