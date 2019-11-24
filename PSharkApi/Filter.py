@@ -96,10 +96,10 @@ def gaussianFilter(src: np.ndarray, ks: int, sigma: float):
 
 
 def main():
-    img = cv.imread("../resource/lena.jpg", cv.IMREAD_UNCHANGED)
+    img = cv.imread("../lena.jpg", cv.IMREAD_UNCHANGED)
     print(img.shape, type(img[0][0]), type(img[0][0]) == np.ndarray, img.dtype)
     cv.imshow("source image", img)
-    cv.imshow("mean filter", meanFilter(img, 6))
+    cv.imshow("mean filter", meanFilter(img, 15))
     cv.imshow("median filter", medianFilter(img, 3))
     cv.imshow("gaussian filter", gaussianFilter(img, 4, 3))
     cv.waitKey(0)

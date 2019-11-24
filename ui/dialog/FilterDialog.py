@@ -29,8 +29,11 @@ class FilterDialog(QDialog):
         self.setWindowTitle("自定义kernel")
         self.setStyleSheet("QDialog{background-color: #fff}\
                             QLineEdit{\
-                                    height: 40px; border: 2px solid #999;} \
-                            QLineEdit:hover{border: 2px solid #666}\
+                                    height: 40px; border: 3px solid #999;font-size:20px; \
+                                    padding-left: 4px;\
+                            } \
+                            QLineEdit:hover {border: 3px solid #666}\
+                            QLineEdit:hover {border: 3px solid #666}\
                             QLabel{font-size: 18px; max-height: 40px; margin-top: 30px; margin-bottom: 10px}\
                             ")
         layout = QVBoxLayout()
