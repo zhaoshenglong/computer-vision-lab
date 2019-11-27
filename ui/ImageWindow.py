@@ -129,20 +129,20 @@ class ImageWindow(QWidget):
             img_array = PSharkApi.internal_gradient(self.history_ctrl.current(), param["se"], param["origin"])
             self.history_ctrl.push(img_array, "灰度图像internal梯度")
         elif action == Actions.CLOSE_RECONSTRUCT:
-            ######################################################################################################
-            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            img_array = PSharkApi.grayscale_closing_reconstruction(
+                self.history_ctrl.current(), param["se"], param["origin"], param["n"])
             self.history_ctrl.push(img_array, "二值图像标准边缘检测")
         elif action == Actions.OPEN_RECONSTRUCT:
-            ######################################################################################################
-            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            img_array = PSharkApi.grayscale_opening_reconstruction(
+                self.history_ctrl.current(), param["se"], param["origin"], param["n"])
             self.history_ctrl.push(img_array, "二值图像标准边缘检测")
         elif action == Actions.DILATION_RECONSTRUCT:
-            ######################################################################################################
-            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            img_array = PSharkApi.grayscale_dilation_reconstruction(
+                self.history_ctrl.current(), param["mask"], param["se"], param["origin"])
             self.history_ctrl.push(img_array, "二值图像标准边缘检测")
         elif action == Actions.EROSION_RECONSTRUCT:
-            ######################################################################################################
-            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            img_array = PSharkApi.grayscale_erosion_reconstruction(
+                self.history_ctrl.current(), param["mask"], param["se"], param["origin"])
             self.history_ctrl.push(img_array, "二值图像标准边缘检测")
         else:
             print("No match action for %d" % action)

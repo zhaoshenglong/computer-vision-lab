@@ -21,7 +21,7 @@ class FileDialog(QFileDialog):
         image, select_folder = QFileDialog.getSaveFileName(self.parent(), self.FileDialogTitle, os.getcwd(),
                                                            "Images (*.png *.bmp *.jpg  *.gif *.jpeg)",
                                                            options=QFileDialog.ShowDirsOnly
-                                                                   | QFileDialog.DontResolveSymlinks
+                                                           | QFileDialog.DontResolveSymlinks
                                                            )
         if image != "":
             print(image, select_folder)

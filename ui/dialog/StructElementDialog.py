@@ -1,11 +1,14 @@
+import os
 from enum import IntEnum
-from typing import List
-
+import cv2 as cv
 import numpy as np
 from PyQt5 import Qt, QtGui
-from PyQt5.QtCore import QRect, QRegExp, pyqtSignal
-from PyQt5.QtGui import QIntValidator, QRegExpValidator, QIcon, QCursor
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget, QGridLayout, QHBoxLayout
+from PyQt5.QtCore import QRect, pyqtSignal
+from PyQt5.QtGui import QIntValidator, QIcon, QCursor, QPixmap
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget, QGridLayout, QHBoxLayout, \
+    QFileDialog
+
+from util import Actions
 
 
 class SEAction(IntEnum):
@@ -31,6 +34,7 @@ class StructElementDialog(QDialog):
     minus_icon_url = "./resource/minus_icon.png"
     plus_disable_icon_url = "./resource/plus_disable_icon.png"
     plus_icon_url = "./resource/plus_icon.png"
+    openMaskTitle = "选择Mask"
 
     decrease_btn: QPushButton
     increase_btn: QPushButton
@@ -38,6 +42,11 @@ class StructElementDialog(QDialog):
     origin: tuple
     MIN_GRID_SZ = 3
     MAX_GRID_SZ = 8
+    mask_url: str
+    mask_label: QLabel
+    mask_pixmap_box: QLabel
+    mask_preview: QPixmap
+    n: int = 1
 
     def __init__(self, parent, action):
         super(QDialog, self).__init__(parent)
@@ -46,6 +55,7 @@ class StructElementDialog(QDialog):
         self.plus_disable_icon = QIcon(self.plus_disable_icon_url)
         self.minus_icon = QIcon(self.minus_icon_url)
         self.minus_disable_icon = QIcon(self.minus_disable_icon_url)
+        self.mask_dialog = QFileDialog(self)
         self.init_ui(action)
 
     def init_ui(self, action):
@@ -111,6 +121,42 @@ class StructElementDialog(QDialog):
         inc_dec_box_layout.addStretch(1)
         layout.addWidget(inc_dec_box)
 
+        if self.action == Actions.EROSION_RECONSTRUCT or self.action == Actions.DILATION_RECONSTRUCT:
+            mask_btn_box = QWidget(self)
+            mask_btn_box_layout = QHBoxLayout()
+            mask_btn_box.setLayout(mask_btn_box_layout)
+            mask_btn_box_layout.setContentsMargins(0, 20, 0, 0)
+
+            mask_open_btn = QPushButton("设置Mask", mask_btn_box)
+            mask_open_btn.clicked.connect(self.open_mask)
+            self.mask_label = QLabel(mask_btn_box)
+            mask_btn_box_layout.addWidget(mask_open_btn)
+            mask_btn_box_layout.addWidget(self.mask_label)
+            self.mask_pixmap_box = QLabel(self)
+            self.mask_pixmap_box.setAlignment(Qt.Qt.AlignHCenter | Qt.Qt.AlignVCenter)
+            layout.addWidget(mask_btn_box)
+            layout.addWidget(self.mask_pixmap_box)
+
+        if self.action == Actions.OPEN_RECONSTRUCT or self.action == Actions.CLOSE_RECONSTRUCT:
+            n_edit_box = QWidget(self)
+            n_edit_box_layout = QHBoxLayout()
+            n_edit_box.setStyleSheet("QLineEdit{\
+                                    height: 24px; border: 2px solid #999;font-size:18px; \
+                                    padding-left: 8px;\
+                                    } \
+                                    QLineEdit:hover {border: 2px solid #666}\
+                                    QLineEdit:focus {border: 2px solid #0078d7}\
+                                    QLabel{font-size: 18px; max-height: 24px；margin-right: 20px}")
+            n_edit_box.setLayout(n_edit_box_layout)
+            n_label = QLabel("n(膨胀/腐蚀次数)", n_edit_box)
+            n_edit = QLineEdit(n_edit_box)
+            n_edit.setValidator(QIntValidator())
+            n_edit.textChanged.connect(self.set_n)
+            n_edit_box_layout.addWidget(n_label)
+            n_edit_box_layout.addWidget(n_edit)
+            n_edit_box_layout.setContentsMargins(0, 32, 0, 0)
+            layout.addWidget(n_edit_box)
+
         ok_btn = QPushButton("确定", self)
         ok_btn.setStyleSheet("QPushButton{\
                                 background-color: #0078d7;  \
@@ -126,7 +172,10 @@ class StructElementDialog(QDialog):
         ok_btn.clicked.connect(self.accept)
         layout.addWidget(ok_btn)
         layout.addStretch(1)
-        self.accepted.connect(lambda: self.parent().on_se_dialog_ok(self.action, self.grid_mat, self.origin))
+        self.accepted.connect(lambda: self.parent().on_se_dialog_ok(
+            self.action, self.grid_mat, self.origin,
+            cv.imread(self.mask_url, cv.IMREAD_UNCHANGED) if self.action == Actions.EROSION_RECONSTRUCT
+            or self.action == Actions.DILATION_RECONSTRUCT else None, self.n))
 
     def draw_grid_se(self, layout: QGridLayout, action=SEAction.INIT):
         if action == SEAction.INIT:
@@ -236,3 +285,21 @@ class StructElementDialog(QDialog):
                                                 height: 40px\
                                             }")
         print(self.origin, self.grid_mat)
+
+    def set_mask(self, file_url: str):
+        self.mask_url = file_url
+        self.mask_preview = QPixmap(self.mask_url)
+        self.mask_pixmap_box.setPixmap(self.mask_preview)
+        self.mask_label.setText(self.mask_url)
+
+    def open_mask(self):
+        image, image_t = QFileDialog.getOpenFileName(self.parent(), self.openMaskTitle, os.getcwd(),
+                                                     "Image Files(*.jpg *.jpeg *.png)")
+        if image != "":
+            self.set_mask(image)
+
+    def set_n(self, txt):
+        if txt == "":
+            self.n = 0
+        else:
+            self.n = int(txt)

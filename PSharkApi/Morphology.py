@@ -1,4 +1,4 @@
-from PSharkApi.MorphologyBasic import __erosion, __dilation, __join, __dilation_b, __erosion_b
+from PSharkApi.MorphologyBasic import __erosion, __dilation, __join, __dilation_b, __erosion_b, __union
 import numpy as np
 import cv2 as cv
 
@@ -131,7 +131,7 @@ def internal_edge_detection_b(src: np.ndarray, se: np.ndarray, origin: tuple) ->
 # Conditional dilation in binary image
 # M < V (Here, suppose we are using opening operation)
 def binary_conditional_dilation(M: np.ndarray, V: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
-    assert(M.shape == V.shape)
+    assert (M.shape == V.shape)
 
     stable: bool = False
     T: np.ndarray = np.copy(M)
@@ -145,7 +145,7 @@ def binary_conditional_dilation(M: np.ndarray, V: np.ndarray, se: np.ndarray, or
 
 
 # Gray scale Reconstruction
-def grayscale_reconstruction(M: np.ndarray, V: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
+def grayscale_dilation_reconstruction(M: np.ndarray, V: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
     assert (M.shape == V.shape)
 
     stable: bool = False
@@ -159,6 +159,37 @@ def grayscale_reconstruction(M: np.ndarray, V: np.ndarray, se: np.ndarray, origi
     return T
 
 
+# Gray scale Reconstruction
+def grayscale_erosion_reconstruction(M: np.ndarray, V: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
+    assert (M.shape == V.shape)
+
+    stable: bool = False
+    T: np.ndarray = np.copy(M)
+
+    while not stable:
+        M = morphology_erosion(M, se, origin)
+        M = __union(M, V)
+        stable = np.array_equal(M, T)
+        T = np.copy(M)
+    return T
+
+
+# Gray scale Reconstruction
+def grayscale_opening_reconstruction(img: np.ndarray, se: np.ndarray, origin: tuple, n: int) -> np.ndarray:
+    img_copy = np.copy(img)
+    for i in range(n):
+        img = morphology_erosion(img, se, origin)
+    return grayscale_dilation_reconstruction(img, img_copy, se, origin)
+
+
+# Gray scale Reconstruction
+def grayscale_closing_reconstruction(img: np.ndarray, se: np.ndarray, origin: tuple, n: int) -> np.ndarray:
+    img_copy = np.copy(img)
+    for i in range(n):
+        img = morphology_dilation(img, se, origin)
+    return grayscale_erosion_reconstruction(img, img_copy, se, origin)
+
+
 # Gradient
 def standard_gradient(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
     height, width = src.shape[:2]
@@ -168,7 +199,9 @@ def standard_gradient(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndar
 
     for i in range(height):
         for j in range(width):
-            res[i][j] = int(src[i][j] - __erosion(src, se, i, j, origin)) >> 1
+            res[i][j] = int(int(__dilation(src, se, i, j, origin)) - __erosion(src, se, i, j, origin)) >> 1
+            if res[i][j] < 0:
+                res[i][j] = 0
     return res
 
 
@@ -180,7 +213,9 @@ def external_gradient(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndar
 
     for i in range(height):
         for j in range(width):
-            res[i][j] = int(src[i][j] - __erosion(src, se, i, j, origin)) >> 1
+            res[i][j] = int(int(__dilation(src, se, i, j, origin)) - src[i][j]) >> 1
+            if res[i][j] < 0:
+                res[i][j] = 0
     return res
 
 
@@ -192,7 +227,9 @@ def internal_gradient(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndar
 
     for i in range(height):
         for j in range(width):
-            res[i][j] = int(src[i][j] - __erosion(src, se, i, j, origin)) >> 1
+            res[i][j] = int(int(src[i][j]) - __erosion(src, se, i, j, origin)) >> 1
+            if res[i][j] < 0:
+                res[i][j] = 0
     return res
 
 

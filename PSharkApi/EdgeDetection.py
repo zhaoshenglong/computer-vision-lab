@@ -5,8 +5,8 @@ import numpy as np
 
 
 def __do_edge_detect(src: np.ndarray, _do_detect: Callable):
-    width = src.shape[0]
-    height = src.shape[1]
+    height = src.shape[0]
+    width = src.shape[1]
     channel = 0
     if type(src[0][0]) == np.ndarray:
         channel = src.shape[2]
@@ -16,21 +16,21 @@ def __do_edge_detect(src: np.ndarray, _do_detect: Callable):
     # For coherence
     # range from 1 to width - 1
     if channel != 0:
-        for i in range(1, width - 1):
-            for j in range(1, height - 1):
+        for i in range(1, height - 2):
+            for j in range(1, width - 2):
                 for k in range(channel):
                     img[i][j][k] = _do_detect(src[i - 1: i + 2, j - 1: j + 2, k])
     else:
         print(width, height, "here")
-        for i in range(1, width - 1):
-            for j in range(1, height - 1):
+        for i in range(1, height - 2):
+            for j in range(1, width - 2):
                 img[i][j] = _do_detect(src[i - 1: i + 2, j - 1: j + 2])
 
     # not deal with boundary
-    for i in range(width):
+    for i in range(height):
         img[i][0] = src[i][0]
         img[i][width - 1] = src[i][width - 1]
-    for j in range(height):
+    for j in range(width):
         img[0][j] = src[0][j]
         img[height - 1][j] = src[height - 1][j]
     return img
