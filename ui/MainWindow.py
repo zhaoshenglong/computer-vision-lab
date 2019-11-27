@@ -1,3 +1,4 @@
+import numpy as np
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QWidget, QFileDialog, QStatusBar, \
@@ -5,10 +6,10 @@ from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QWidget, QFileDialog, Q
 
 from ui.ImageWindow import ImageWindow
 from ui.RightWindow import RightWindow
-from ui.dialog import FileDialog
+from ui.dialog import FileDialog, StructElementDialog
 from ui.dialog.FilterDialog import FilterDialog
 from ui.popupWindow import MorePopup
-from util import QSSHelper
+from util import QSSHelper, Actions
 from .MenuBar import MenuBar
 
 
@@ -111,3 +112,14 @@ class MainWindow(QMainWindow):
             print("modify image")
         else:
             print("canceled")
+
+    def openSeDialogEvent(self, action: int):
+        se_dialog = StructElementDialog(self, action)
+        if se_dialog.exec_() == 1:
+            print("click ok se")
+        else:
+            print("canceled")
+
+    def on_se_ok(self, action: int, grid_mat: np.ndarray, origin: tuple):
+        print(action, grid_mat, origin)
+        self.image_window.on_image_edit(action, (grid_mat, origin))

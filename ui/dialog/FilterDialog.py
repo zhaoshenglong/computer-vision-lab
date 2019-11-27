@@ -33,7 +33,7 @@ class FilterDialog(QDialog):
                                     padding-left: 4px;\
                             } \
                             QLineEdit:hover {border: 3px solid #666}\
-                            QLineEdit:hover {border: 3px solid #666}\
+                            QLineEdit:focus {border: 3px solid #0078d7}\
                             QLabel{font-size: 18px; max-height: 40px; margin-top: 30px; margin-bottom: 10px}\
                             ")
         layout = QVBoxLayout()
