@@ -1,0 +1,5 @@
+27/11/2019
+Publish v0.0.2
+1. add grayscale and binary image operations
+2. add customized struct element dialog
+3. add image mode transfer

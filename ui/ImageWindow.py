@@ -1,3 +1,5 @@
+from typing import Dict
+
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy
@@ -6,7 +8,7 @@ import cv2 as cv
 
 import PSharkApi
 from EditHistoryCtrl import HistoryCtrl
-from util import Actions
+from util import Actions, Image
 
 
 class ImageWindow(QWidget):
@@ -17,6 +19,7 @@ class ImageWindow(QWidget):
     __height: int
     __margin = 40
     is_right_window_open = False
+    mode: int
 
     img_box: QLabel
     pixmap: QPixmap
@@ -68,7 +71,7 @@ class ImageWindow(QWidget):
         self.parent().menubar.toggle_undo_btn()
         self.parent().menubar.toggle_redo_btn()
 
-    def on_image_edit(self, action: int, param: tuple = None):
+    def on_image_edit(self, action: int, param: Dict = None):
         ks: int
         sigma: float
         img_array: np.ndarray
@@ -84,44 +87,69 @@ class ImageWindow(QWidget):
             img_array = PSharkApi.prewitt_operator(self.history_ctrl.current())
             self.history_ctrl.push(img_array, "Prewitt算子")
         elif action == Actions.MEAN_FILTER:
-            img_array = PSharkApi.meanFilter(self.history_ctrl.current(), int(param[0]))
+            img_array = PSharkApi.meanFilter(self.history_ctrl.current(), param["ks"])
             self.history_ctrl.push(img_array, "均值滤波")
         elif action == Actions.MEDIAN_FILTER:
-            img_array = PSharkApi.medianFilter(self.history_ctrl.current(), int(param[0]))
+            img_array = PSharkApi.medianFilter(self.history_ctrl.current(), param["ks"])
             self.history_ctrl.push(img_array, "中值滤波")
         elif action == Actions.GAUSSIAN_FILTER:
-            img_array = PSharkApi.gaussianFilter(self.history_ctrl.current(), int(param[0]), float(param[1]))
+            img_array = PSharkApi.gaussianFilter(self.history_ctrl.current(), param["ks"], param["sigma"])
             self.history_ctrl.push(img_array, "高斯滤波")
-        elif action == Actions.COLOR_ADJUST:
-            print("调整颜色")
-        elif action == Actions.ROTATE:
-            print("旋转")
-        elif action == Actions.CUT:
-            print("裁剪")
+        elif action == Actions.RGB:
+            # img_array = cv.cvtColor(self.history_ctrl.current(), cv.COLOR_GRAY2RGB)
+            # self.history_ctrl.push(img_array, "转化成RGB")
+            pass
+        elif action == Actions.GRAYSCALE:
+            img_array = cv.cvtColor(self.history_ctrl.current(), cv.COLOR_RGB2GRAY)
+            self.history_ctrl.push(img_array, "转化成GRAYSCALE")
+        elif action == Actions.BINARY:
+            ret, img_array = cv.threshold(self.history_ctrl.current(), 0, 255, cv.THRESH_OTSU)
+            self.history_ctrl.push(img_array, "转化成BINARY")
+        elif action == Actions.STANDARD_EDGE:
+            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像标准边缘检测")
+        elif action == Actions.EXTERNAL_EDGE:
+            img_array = PSharkApi.external_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像external边缘检测")
+        elif action == Actions.INTERNAL_EDGE:
+            img_array = PSharkApi.internal_edge_detection_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像internal边缘检测")
+        elif action == Actions.CONDITIONAL_DILATION:
+            img_array = PSharkApi.binary_conditional_dilation(
+                PSharkApi.morphology_opening_b(self.history_ctrl.current(), param["se"], param["origin"]),
+                self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像条件膨胀")
+        elif action == Actions.STANDARD_GRADIENT:
+            img_array = PSharkApi.standard_gradient(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "灰度图像标准梯度")
+        elif action == Actions.EXTERNAL_GRADIENT:
+            img_array = PSharkApi.external_gradient(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "灰度图像external梯度")
+        elif action == Actions.INTERNAL_GRADIENT:
+            img_array = PSharkApi.internal_gradient(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "灰度图像internal梯度")
+        elif action == Actions.CLOSE_RECONSTRUCT:
+            ######################################################################################################
+            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像标准边缘检测")
+        elif action == Actions.OPEN_RECONSTRUCT:
+            ######################################################################################################
+            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像标准边缘检测")
+        elif action == Actions.DILATION_RECONSTRUCT:
+            ######################################################################################################
+            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像标准边缘检测")
+        elif action == Actions.EROSION_RECONSTRUCT:
+            ######################################################################################################
+            img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
+            self.history_ctrl.push(img_array, "二值图像标准边缘检测")
         else:
             print("No match action for %d" % action)
-        self.draw_pixmap_cv(self.from_cv_array(self.history_ctrl.current()))
+        self.draw_pixmap_cv(Image.from_cv_array(self.history_ctrl.current()))
         self.__img_edit_sig.emit()
         self.parent().menubar.toggle_undo_btn()
         self.parent().menubar.toggle_redo_btn()
-
-    def from_cv_array(self, img_array):
-        height = img_array.shape[0]
-        width = img_array.shape[1]
-        channel = 0
-        img: QImage
-        if type(img_array[0][0]) == np.ndarray:
-            channel = img_array.shape[2]
-        bytes_per_line = 3 * width
-        if channel == 0:
-            img = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
-        elif channel == 3:
-            img = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-        elif channel == 4:
-            img = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_RGBA8888)
-        else:
-            img = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_Invalid)
-        return img
 
     def on_window_resize(self, width, height):
         if self.is_right_window_open:
@@ -142,14 +170,14 @@ class ImageWindow(QWidget):
     def on_undo(self):
         if not self.history_ctrl.undo_disable():
             self.history_ctrl.undo()
-            self.draw_pixmap_cv(self.from_cv_array(self.history_ctrl.current()))
+            self.draw_pixmap_cv(Image.from_cv_array(self.history_ctrl.current()))
         self.parent().menubar.toggle_undo_btn()
         self.parent().menubar.toggle_redo_btn()
 
     def on_redo(self):
         if not self.history_ctrl.redo_disable():
             self.history_ctrl.redo()
-            self.draw_pixmap_cv(self.from_cv_array(self.history_ctrl.current()))
+            self.draw_pixmap_cv(Image.from_cv_array(self.history_ctrl.current()))
         self.parent().menubar.toggle_undo_btn()
         self.parent().menubar.toggle_redo_btn()
 

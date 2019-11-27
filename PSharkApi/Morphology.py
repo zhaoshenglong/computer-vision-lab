@@ -92,7 +92,7 @@ def morphology_closing_b(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.n
 
 
 # Edge detection
-def standard_edge_detect(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
+def standard_edge_detect_b(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
     height, width = src.shape[:2]
     res = np.empty([height, width], src.dtype)
     if src.shape.__len__() > 2:
@@ -100,11 +100,11 @@ def standard_edge_detect(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.n
 
     for i in range(height):
         for j in range(width):
-            res[i][j] = __dilation(src, se, i, j, origin) - __erosion(src, se, i, j, origin)
+            res[i][j] = __dilation_b(src, se, i, j, origin) - __erosion_b(src, se, i, j, origin)
     return res
 
 
-def external_edge_detect(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
+def external_edge_detect_b(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
     height, width = src.shape[:2]
     res = np.empty([height, width], src.dtype)
     if src.shape.__len__() > 2:
@@ -112,11 +112,11 @@ def external_edge_detect(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.n
 
     for i in range(height):
         for j in range(width):
-            res[i][j] = __dilation(src, se, i, j, origin) - src[i, j]
+            res[i][j] = __dilation_b(src, se, i, j, origin) - src[i, j]
     return res
 
 
-def internal_edge_detection(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
+def internal_edge_detection_b(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndarray:
     height, width = src.shape[:2]
     res = np.empty([height, width], src.dtype)
     if src.shape.__len__() > 2:
@@ -124,7 +124,7 @@ def internal_edge_detection(src: np.ndarray, se: np.ndarray, origin: tuple) -> n
 
     for i in range(height):
         for j in range(width):
-            res[i][j] = src[i][j] - __erosion(src, se, i, j, origin)
+            res[i][j] = src[i][j] - __erosion_b(src, se, i, j, origin)
     return res
 
 
@@ -198,11 +198,16 @@ def internal_gradient(src: np.ndarray, se: np.ndarray, origin: tuple) -> np.ndar
 
 def main():
     img = cv.imread("../lena.jpg", cv.IMREAD_GRAYSCALE)
+    ret, img = cv.threshold(img, 0, 255, cv.THRESH_OTSU)
     cv.imshow("origin", img)
     se = np.ones([3, 3])
-    open_img = morphology_erosion(img, se, (1, 1))
-    cv.imshow("dilated", open_img)
-    cv.imshow("reconstruction", grayscale_reconstruction(open_img, img, se, (1, 1)))
+    # cv.imshow("erosion", morphology_erosion_b(img, se, (1, 1)))
+    # cv.imshow("dilation", morphology_dilation_b(img, se, (1, 1)))
+    # cv.imshow("open", morphology_opening_b(img, se, (1, 1)))
+    # cv.imshow("close", morphology_closing_b(img, se, (1, 1)))
+    # cv.imshow("standard", standard_edge_detect_b(img, se, (1, 1)))
+    # cv.imshow("external", external_edge_detect_b(img, se, (1, 1)))
+    # cv.imshow("internal", internal_edge_detection_b(img, se, (1, 1)))
     cv.waitKey(0)
     cv.destroyAllWindows()
 

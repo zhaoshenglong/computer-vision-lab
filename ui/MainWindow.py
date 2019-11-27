@@ -120,6 +120,12 @@ class MainWindow(QMainWindow):
         else:
             print("canceled")
 
-    def on_se_ok(self, action: int, grid_mat: np.ndarray, origin: tuple):
+    def on_se_dialog_ok(self, action: int, grid_mat: np.ndarray, origin: tuple):
         print(action, grid_mat, origin)
-        self.image_window.on_image_edit(action, (grid_mat, origin))
+        self.image_window.on_image_edit(action, {"se": grid_mat, "origin": origin})
+
+    def on_filter_dialog_ok(self, action: int, kernel: str, sigma: str = ""):
+        print(action, kernel, sigma)
+        ks: int = int(kernel) if kernel != "" else 0
+        sig: float = float(sigma) if sigma != "" else 0.0
+        self.image_window.on_image_edit(action, {"ks": ks, "sigma": sig})

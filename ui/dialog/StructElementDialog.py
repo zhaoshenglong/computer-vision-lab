@@ -126,7 +126,7 @@ class StructElementDialog(QDialog):
         ok_btn.clicked.connect(self.accept)
         layout.addWidget(ok_btn)
         layout.addStretch(1)
-        self.accepted.connect(lambda: self.parent().on_se_ok(self.action, self.grid_mat, self.origin))
+        self.accepted.connect(lambda: self.parent().on_se_dialog_ok(self.action, self.grid_mat, self.origin))
 
     def draw_grid_se(self, layout: QGridLayout, action=SEAction.INIT):
         if action == SEAction.INIT:

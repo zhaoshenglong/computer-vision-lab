@@ -70,9 +70,7 @@ class FilterDialog(QDialog):
         ok_btn.clicked.connect(self.accept)
         if action == Actions.GAUSSIAN_FILTER:
             self.accepted.connect(lambda: self.parent()
-                                  .image_window.on_image_edit(action,
-                                                              (self.kernel_input.text(), self.sigma_input.text())))
+                                  .on_filter_dialog_ok(action, self.kernel_input.text(), self.sigma_input.text()))
         else:
             self.accepted.connect(lambda: self.parent()
-                                  .image_window.on_image_edit(action,
-                                                              (self.kernel_input.text())))
+                                  .on_filter_dialog_ok(action, self.kernel_input.text()))

@@ -37,4 +37,24 @@ supports list bellow
 v0.0.2 is developing.
 We may need refactoring (This is my first time programming with `Qt` though it is efficient)
 
-
+- [x] Grayscale mode
+- [x] Binary mode
+- [x] Grayscale operations
+    - [x] Grayscale gradient
+        - [x] standard
+        - [x] external
+        - [x] internal
+    - [x] Reconstruction
+        - [x] dilation
+        - [x] erosion
+        - [x] opening
+        - [x] closing
+- [x] Binary operations
+    - [x] Conditional dilation
+    - [x] edge detection
+        - [x] standard
+        - [x] external
+        - [x] internal
+        
+Conditional dilation only supports opening, mask is the current image, marker is opening result with mask. The algorithm is the 
+same as that described on PPT.
