@@ -58,3 +58,6 @@ We may need refactoring (This is my first time programming with `Qt` though it i
         
 Conditional dilation only supports opening, mask is the current image, marker is opening result with mask. The algorithm is the 
 same as that described on PPT.
+
+用中文吧 ( <br/>
+所有的重建都必须是shape一致的，否则会直接Assert失败退出(未作Assert失败报警)

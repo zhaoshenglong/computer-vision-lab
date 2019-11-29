@@ -4,11 +4,11 @@ import cv2 as cv
 import numpy as np
 from PyQt5 import Qt, QtGui
 from PyQt5.QtCore import QRect, pyqtSignal
-from PyQt5.QtGui import QIntValidator, QIcon, QCursor, QPixmap
+from PyQt5.QtGui import QIntValidator, QIcon, QCursor, QPixmap, QImage
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget, QGridLayout, QHBoxLayout, \
     QFileDialog
 
-from util import Actions
+from util import Actions, Image
 
 
 class SEAction(IntEnum):
@@ -174,7 +174,7 @@ class StructElementDialog(QDialog):
         layout.addStretch(1)
         self.accepted.connect(lambda: self.parent().on_se_dialog_ok(
             self.action, self.grid_mat, self.origin,
-            cv.imread(self.mask_url, cv.IMREAD_UNCHANGED) if self.action == Actions.EROSION_RECONSTRUCT
+            cv.imread(self.mask_url, cv.IMREAD_GRAYSCALE) if self.action == Actions.EROSION_RECONSTRUCT
             or self.action == Actions.DILATION_RECONSTRUCT else None, self.n))
 
     def draw_grid_se(self, layout: QGridLayout, action=SEAction.INIT):
@@ -289,6 +289,8 @@ class StructElementDialog(QDialog):
     def set_mask(self, file_url: str):
         self.mask_url = file_url
         self.mask_preview = QPixmap(self.mask_url)
+        gray = cv.imread(file_url, cv.IMREAD_GRAYSCALE)
+        self.mask_preview = QPixmap.fromImage(Image.from_cv_array(gray))
         self.mask_pixmap_box.setPixmap(self.mask_preview)
         self.mask_label.setText(self.mask_url)
 
