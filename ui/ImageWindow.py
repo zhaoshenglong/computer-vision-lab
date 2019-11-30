@@ -100,11 +100,13 @@ class ImageWindow(QWidget):
             # self.history_ctrl.push(img_array, "转化成RGB")
             pass
         elif action == Actions.GRAYSCALE:
-            img_array = cv.cvtColor(self.history_ctrl.current(), cv.COLOR_RGB2GRAY)
-            self.history_ctrl.push(img_array, "转化成GRAYSCALE")
+            if type(self.history_ctrl.current()[0][0]) == np.ndarray:
+                img_array = cv.cvtColor(self.history_ctrl.current(), cv.COLOR_RGB2GRAY)
+                self.history_ctrl.push(img_array, "转化成GRAYSCALE")
         elif action == Actions.BINARY:
-            ret, img_array = cv.threshold(self.history_ctrl.current(), 0, 255, cv.THRESH_OTSU)
-            self.history_ctrl.push(img_array, "转化成BINARY")
+            if type(self.history_ctrl.current()[0][0]) == np.ndarray:
+                ret, img_array = cv.threshold(self.history_ctrl.current(), 0, 255, cv.THRESH_OTSU)
+                self.history_ctrl.push(img_array, "转化成BINARY")
         elif action == Actions.STANDARD_EDGE:
             img_array = PSharkApi.standard_edge_detect_b(self.history_ctrl.current(), param["se"], param["origin"])
             self.history_ctrl.push(img_array, "二值图像标准边缘检测")

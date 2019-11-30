@@ -13,8 +13,10 @@ from util import Actions, Image
 
 class SEAction(IntEnum):
     INIT = 0
-    INCREASE = 1
-    DECREASE = 2
+    INCREASE_COLUMN = 1
+    DECREASE_COLUMN = 2
+    INCREASE_ROW = 3
+    DECREASE_ROW = 4
 
 
 class LineEditButton(QLineEdit):
@@ -36,12 +38,17 @@ class StructElementDialog(QDialog):
     plus_icon_url = "./resource/plus_icon.png"
     openMaskTitle = "选择Mask"
 
-    decrease_btn: QPushButton
-    increase_btn: QPushButton
+    column_decrease_btn: QPushButton
+    column_increase_btn: QPushButton
+    row_decrease_btn: QPushButton
+    row_increase_btn: QPushButton
+    MIN_COLUMN_SZ = 2
+    MAX_COLUMN_SZ = 10
+    MIN_ROW_SZ = 1
+    MAX_ROW_SZ = 10
+
     grid_box: QWidget
     origin: tuple
-    MIN_GRID_SZ = 3
-    MAX_GRID_SZ = 8
     mask_url: str
     mask_label: QLabel
     mask_pixmap_box: QLabel
@@ -71,7 +78,13 @@ class StructElementDialog(QDialog):
         self.setLayout(layout)
 
         # Grid box
-        self.grid_box = QWidget(self)
+        grid_box_container = QWidget(self)
+        grid_box_container_layout = QHBoxLayout()
+        grid_box_container.setLayout(grid_box_container_layout)
+        grid_box_container_layout.setSpacing(0)
+        grid_box_container_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.grid_box = QWidget(grid_box_container)
         self.grid_box_layout = QGridLayout()
         self.grid_box_layout.setContentsMargins(0, 36, 0, 0)
         self.grid_box_layout.setHorizontalSpacing(0)
@@ -85,41 +98,78 @@ class StructElementDialog(QDialog):
                                         border: 2px solid #CFE0FF;\
                                     }")
         self.grid_box.setLayout(self.grid_box_layout)
-        layout.addWidget(self.grid_box)
 
-        self.decrease_btn = QPushButton(self)
-        self.decrease_btn.setIcon(self.minus_disable_icon)
-        self.increase_btn = QPushButton(self)
-        self.increase_btn.setIcon(self.plus_icon)
+        self.row_decrease_btn = QPushButton(grid_box_container)
+        self.row_decrease_btn.setIcon(self.minus_disable_icon)
+        self.row_increase_btn = QPushButton(grid_box_container)
+        self.row_increase_btn.setIcon(self.plus_icon)
 
-        self.decrease_btn.setStyleSheet("height: 24px;\
+        self.row_decrease_btn.setStyleSheet("height: 112px;\
+                                                 width: 24px;\
+                                                 background: #fafafa;\
+                                                 border-width: 1px;\
+                                                 border-style: flat;\
+                                                 border-bottom-right-radius: 12px;\
+                                                 border-bottom-left-radius: 12px")
+        self.row_increase_btn.setStyleSheet("height: 112px;\
+                                                 width: 24px;\
+                                                 background: #f0f0f0;\
+                                                 border-width: 1px;\
+                                                 border-style: flat;\
+                                                 border-top-right-radius: 12px;\
+                                                 border-top-left-radius: 12px")
+        self.row_increase_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
+        self.row_increase_btn.clicked.connect(self.on_row_increase_btn_clicked)
+        self.row_decrease_btn.clicked.connect(self.on_row_decrease_btn_clicked)
+        row_inc_dec_box = QWidget(grid_box_container)
+        row_inc_dec_box.setStyleSheet("margin-left: 24px;")
+        row_inc_dec_box_layout = QVBoxLayout()
+        row_inc_dec_box_layout.setSpacing(2)
+        row_inc_dec_box_layout.setContentsMargins(0, 0, 0, 0)
+        row_inc_dec_box.setLayout(row_inc_dec_box_layout)
+        row_inc_dec_box_layout.addStretch(1)
+        row_inc_dec_box_layout.addWidget(self.row_increase_btn)
+        row_inc_dec_box_layout.addWidget(self.row_decrease_btn)
+
+        row_inc_dec_box_layout.addStretch(1)
+
+        grid_box_container_layout.addWidget(self.grid_box)
+        grid_box_container_layout.addWidget(row_inc_dec_box)
+        layout.addWidget(grid_box_container)
+
+        self.column_decrease_btn = QPushButton(self)
+        self.column_decrease_btn.setIcon(self.minus_disable_icon)
+        self.column_increase_btn = QPushButton(self)
+        self.column_increase_btn.setIcon(self.plus_icon)
+
+        self.column_decrease_btn.setStyleSheet("height: 24px;\
                                          width: 112px;\
                                          background: #fafafa;\
                                          border-width: 1px;\
                                          border-style: flat;\
                                          border-top-left-radius: 12px;\
                                          border-bottom-left-radius: 12px")
-        self.increase_btn.setStyleSheet("height: 24px;\
+        self.column_increase_btn.setStyleSheet("height: 24px;\
                                          width: 112px;\
                                          background: #f0f0f0;\
                                          border-width: 1px;\
                                          border-style: flat;\
                                          border-top-right-radius: 12px;\
                                          border-bottom-right-radius: 12px")
-        self.increase_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
-        self.increase_btn.clicked.connect(self.on_increase_btn_clicked)
-        self.decrease_btn.clicked.connect(self.on_decrease_btn_clicked)
-        inc_dec_box = QWidget(self)
-        inc_dec_box.setStyleSheet("margin-top: 32px;")
-        inc_dec_box_layout = QHBoxLayout()
-        inc_dec_box_layout.setSpacing(2)
-        inc_dec_box_layout.setContentsMargins(0, 0, 0, 0)
-        inc_dec_box.setLayout(inc_dec_box_layout)
-        inc_dec_box_layout.addStretch(1)
-        inc_dec_box_layout.addWidget(self.decrease_btn)
-        inc_dec_box_layout.addWidget(self.increase_btn)
-        inc_dec_box_layout.addStretch(1)
-        layout.addWidget(inc_dec_box)
+        self.column_increase_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
+        self.column_increase_btn.clicked.connect(self.on_column_increase_btn_clicked)
+        self.column_decrease_btn.clicked.connect(self.on_column_decrease_btn_clicked)
+        column_inc_dec_box = QWidget(self)
+        column_inc_dec_box.setStyleSheet("margin-top: 32px;")
+        column_inc_dec_box_layout = QHBoxLayout()
+        column_inc_dec_box_layout.setSpacing(2)
+        column_inc_dec_box_layout.setContentsMargins(0, 0, 0, 0)
+        column_inc_dec_box.setLayout(column_inc_dec_box_layout)
+        column_inc_dec_box_layout.addStretch(1)
+        column_inc_dec_box_layout.addWidget(self.column_decrease_btn)
+        column_inc_dec_box_layout.addWidget(self.column_increase_btn)
+        column_inc_dec_box_layout.addStretch(1)
+        layout.addWidget(column_inc_dec_box)
 
         if self.action == Actions.EROSION_RECONSTRUCT or self.action == Actions.DILATION_RECONSTRUCT:
             mask_btn_box = QWidget(self)
@@ -179,18 +229,29 @@ class StructElementDialog(QDialog):
 
     def draw_grid_se(self, layout: QGridLayout, action=SEAction.INIT):
         if action == SEAction.INIT:
-            self.grid_mat = np.ones([self.MIN_GRID_SZ, self.MIN_GRID_SZ], np.int)
-            self.origin = (1, 1)
-        elif action == SEAction.INCREASE:
-            tmp = np.ones([self.grid_mat.shape[0] + 1, self.grid_mat.shape[1] + 1], np.int)
+            self.grid_mat = np.ones([self.MIN_ROW_SZ, self.MIN_COLUMN_SZ], np.int)
+            self.origin = (0, 0)
+        elif action == SEAction.INCREASE_COLUMN:
+            tmp = np.ones([self.grid_mat.shape[0], self.grid_mat.shape[1] + 1], np.int)
             for i in range(self.grid_mat.shape[0]):
                 for j in range(self.grid_mat.shape[1]):
                     tmp[i][j] = self.grid_mat[i][j]
             self.grid_mat = tmp
-        elif action != SEAction.DECREASE:
-            print("Action undefined!")
+        elif action == SEAction.INCREASE_ROW:
+            tmp = np.ones([self.grid_mat.shape[0] + 1, self.grid_mat.shape[1]], np.int)
+            for i in range(self.grid_mat.shape[0]):
+                for j in range(self.grid_mat.shape[1]):
+                    tmp[i][j] = self.grid_mat[i][j]
+            self.grid_mat = tmp
+        elif action == SEAction.DECREASE_COLUMN:
+            self.grid_mat = np.copy(self.grid_mat[:, :-1])
         else:
-            self.grid_mat = np.copy(self.grid_mat[:-1, :-1])
+            self.grid_mat = np.copy(self.grid_mat[:-1, :])
+
+        if self.origin[0] >= self.grid_mat.shape[0]:
+            self.origin = (self.grid_mat.shape[0] - 1, self.origin[1])
+        if self.origin[1] > self.grid_mat.shape[1]:
+            self.origin = (self.origin[0], self.grid_mat.shape[1] - 1)
 
         for child in self.grid_box.children():
             if type(child) == LineEditButton:
@@ -211,54 +272,103 @@ class StructElementDialog(QDialog):
 
                 layout.addWidget(grid_cell, x, y, 1, 1)
 
-    def on_increase_btn_clicked(self):
-        print(self.grid_mat.shape)
-        if self.grid_mat.shape[0] < self.MAX_GRID_SZ:
-            self.draw_grid_se(self.grid_box_layout, SEAction.INCREASE)
-            if self.grid_mat.shape[0] >= self.MAX_GRID_SZ:
-                self.increase_btn.setStyleSheet("height: 24px;\
+    def on_column_increase_btn_clicked(self):
+        print(self.grid_mat)
+        if self.grid_mat.shape[1] < self.MAX_COLUMN_SZ:
+            self.draw_grid_se(self.grid_box_layout, SEAction.INCREASE_COLUMN)
+            if self.grid_mat.shape[1] >= self.MAX_COLUMN_SZ:
+                self.column_increase_btn.setStyleSheet("height: 24px;\
                                                  width: 112px;\
                                                  background: #fafafa;\
                                                  border-width: 1px;\
                                                  border-style: flat;\
                                                  border-top-right-radius: 12px;\
                                                  border-bottom-right-radius: 12px;")
-                self.increase_btn.setIcon(self.plus_disable_icon)
-                self.increase_btn.setCursor(QCursor(Qt.Qt.ArrowCursor))
-            self.decrease_btn.setStyleSheet("height: 24px;\
+                self.column_increase_btn.setIcon(self.plus_disable_icon)
+                self.column_increase_btn.setCursor(QCursor(Qt.Qt.ArrowCursor))
+            self.column_decrease_btn.setStyleSheet("height: 24px;\
                                              width: 112px;\
                                              background: #f0f0f0;\
                                              border-width: 1px;\
                                              border-style: flat;\
                                              border-top-left-radius: 12px;\
                                              border-bottom-left-radius: 12px")
-            self.decrease_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
-            self.decrease_btn.setIcon(self.minus_icon)
+            self.column_decrease_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
+            self.column_decrease_btn.setIcon(self.minus_icon)
 
-    def on_decrease_btn_clicked(self):
-        print(self.grid_mat.shape)
-        if self.grid_mat.shape[0] > self.MIN_GRID_SZ:
-            self.draw_grid_se(self.grid_box_layout, SEAction.DECREASE)
-            if self.grid_mat.shape[0] <= self.MIN_GRID_SZ:
-                self.decrease_btn.setStyleSheet("height: 24px;\
+    def on_column_decrease_btn_clicked(self):
+        print(self.grid_mat)
+        if self.grid_mat.shape[1] > self.MIN_COLUMN_SZ:
+            self.draw_grid_se(self.grid_box_layout, SEAction.DECREASE_COLUMN)
+            if self.grid_mat.shape[1] <= self.MIN_COLUMN_SZ:
+                self.column_decrease_btn.setStyleSheet("height: 24px;\
                                                  width: 112px;\
                                                  background: #fafafa;\
                                                  border-width: 1px;\
                                                  border-style: flat;\
                                                  border-top-left-radius: 12px;\
                                                  border-bottom-left-radius: 12px")
-                self.decrease_btn.setCursor(QCursor(Qt.Qt.ArrowCursor))
-                self.decrease_btn.setIcon(self.minus_disable_icon)
+                self.column_decrease_btn.setCursor(QCursor(Qt.Qt.ArrowCursor))
+                self.column_decrease_btn.setIcon(self.minus_disable_icon)
 
-            self.increase_btn.setStyleSheet("height: 24px;\
+            self.column_increase_btn.setStyleSheet("height: 24px;\
                                             width: 112px;\
                                             background: #f0f0f0;\
                                             border-width: 1px;\
                                             border-style: flat;\
                                             border-top-right-radius: 12px;\
                                             border-bottom-right-radius: 12px;")
-            self.increase_btn.setIcon(self.plus_icon)
-            self.increase_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
+            self.column_increase_btn.setIcon(self.plus_icon)
+            self.column_increase_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
+
+    def on_row_increase_btn_clicked(self):
+        print(self.grid_mat)
+        if self.grid_mat.shape[0] < self.MAX_ROW_SZ:
+            self.draw_grid_se(self.grid_box_layout, SEAction.INCREASE_ROW)
+            if self.grid_mat.shape[0] >= self.MAX_ROW_SZ:
+                self.row_increase_btn.setStyleSheet("height: 112px;\
+                                                 width: 34px;\
+                                                 background: #fafafa;\
+                                                 border-width: 1px;\
+                                                 border-style: flat;\
+                                                 border-top-right-radius: 12px;\
+                                                 border-top-left-radius: 12px;")
+                self.row_increase_btn.setIcon(self.plus_disable_icon)
+                self.row_increase_btn.setCursor(QCursor(Qt.Qt.ArrowCursor))
+            self.row_decrease_btn.setStyleSheet("height: 112px;\
+                                             width: 24px;\
+                                             background: #f0f0f0;\
+                                             border-width: 1px;\
+                                             border-style: flat;\
+                                             border-bottom-left-radius: 12px;\
+                                             border-bottom-right-radius: 12px")
+            self.row_decrease_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
+            self.row_decrease_btn.setIcon(self.minus_icon)
+
+    def on_row_decrease_btn_clicked(self):
+        print(self.grid_mat)
+        if self.grid_mat.shape[0] > self.MIN_ROW_SZ:
+            self.draw_grid_se(self.grid_box_layout, SEAction.DECREASE_ROW)
+            if self.grid_mat.shape[0] <= self.MIN_COLUMN_SZ:
+                self.row_decrease_btn.setStyleSheet("height: 112px;\
+                                                 width: 24px;\
+                                                 background: #fafafa;\
+                                                 border-width: 1px;\
+                                                 border-style: flat;\
+                                                 border-bottom-right-radius: 12px;\
+                                                 border-bottom-left-radius: 12px")
+                self.row_decrease_btn.setCursor(QCursor(Qt.Qt.ArrowCursor))
+                self.row_decrease_btn.setIcon(self.minus_disable_icon)
+
+            self.row_increase_btn.setStyleSheet("height: 112px;\
+                                            width: 24px;\
+                                            background: #f0f0f0;\
+                                            border-width: 1px;\
+                                            border-style: flat;\
+                                            border-top-right-radius: 12px;\
+                                            border-bottom-right-radius: 12px;")
+            self.row_increase_btn.setIcon(self.plus_icon)
+            self.row_increase_btn.setCursor(QCursor(Qt.Qt.PointingHandCursor))
 
     def on_txt_edited(self, txt, i, j):
         if txt != "":
